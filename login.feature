@@ -3,4 +3,7 @@ Feature: Login page tests
   # Enter feature description here
 
   Scenario: Login
-    Given Open "https://test.sugaringfactory.com/index.php?route=account%2Flogin" url
+    Given Open "staging" environment
+    Then Verify "login" page is exists
+    Then Login as "tester"
+    Then Wait for "2" seconds
