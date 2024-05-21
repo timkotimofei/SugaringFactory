@@ -7,12 +7,15 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from faker import Faker
 
 
 @step('Open "{url}" url')
 def open_url(context, url):
     context.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    context.driver.maximize_window()
     context.driver.get(url)
+
 
 
 @step('Open "{env}" environment')
@@ -67,7 +70,7 @@ def verify_page_exists(context, page_name):
     """
     pages = {
         'login': "//h1[contains(text(), 'Account Login')]",
-        'app': "//div[contains(@class, 'left-panel_user_info_card')]",
+        'my account': "//h1[contains(text(), 'My Account')]",
         'suga_login': "//h2[contains(text(), 'Returning Customer')]",
         'sug_forgot_pass': "//a[contains(text(), 'Forgotten Password')]",
         'app_sugar': "//a[contains(text(), 'Edit Account')]"
@@ -113,3 +116,26 @@ def step_impl(context, role):
         type_in(context, credentials[role][0], "//input[@name='email']")
         sleep(int(3))
         click_element(context, "//span[contains(text(), 'Continue')]")
+
+
+@step('Scroll to element "{xpath}"')
+def scroll_to_element(context, xpath):
+    element = WebDriverWait(context.driver, 10).until(EC.presence_of_element_located((By.XPATH, f"{xpath}")))
+    context.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+
+
+@step('Type random name to "{xpath}"')
+def type_random_name(context, xpath):
+    fake = Faker('En')
+    data_dict = {
+        'first_name': fake.first_name(),
+        'last_name': fake.last_name(),
+        'company': fake.company(),
+        'adress_1': fake.address(),
+        'adress_2': fake.address(),
+        'city': fake.city(),
+        'email': fake.email()
+    }
+
+    type_in(context, data_dict['first_name'], xpath)
+
