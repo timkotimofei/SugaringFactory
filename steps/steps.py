@@ -1,22 +1,45 @@
 from time import sleep
 from behave import step
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.common import TimeoutException
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 from faker import Faker
 
 
+# @step('Open "{url}" url')
+# def open_url(context, url):
+#     context.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+#     context.driver.maximize_window()
+#     context.driver.get(url)
+#
+#
+
+
 @step('Open "{url}" url')
 def open_url(context, url):
-    context.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    # Создаем опции для Chrome
+    chrome_options = Options()
+    chrome_options.add_experimental_option("prefs", {
+        "credentials_enable_service": False,  # Отключаем службу учетных данных
+        "profile.password_manager_enabled": False,  # Отключаем менеджер паролей
+        "autofill": {"enabled": False},  # Отключаем автозаполнение
+        "profile.default_content_settings.popups": 0,  # Отключаем попапы
+        "profile.default_content_setting_values.notifications": 2,  # Отключаем уведомления
+        "profile.default_content_setting_values.automatic_downloads": 1  # Разрешение автоматических загрузок
+    })
+    chrome_options.add_argument("--disable-popup-blocking")  # Отключаем блокировку всплывающих окон
+    chrome_options.add_argument("--disable-save-password-bubble")  # Отключение всплывающего окна сохранения пароля
+
+    # Инициализация WebDriver с указанными опциями
+    context.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
     context.driver.maximize_window()
     context.driver.get(url)
-
-
 
 @step('Open "{env}" environment')
 def open_env(context, env):
@@ -124,18 +147,32 @@ def scroll_to_element(context, xpath):
     context.driver.execute_script("arguments[0].scrollIntoView(true);", element)
 
 
-@step('Type random name to "{xpath}"')
-def type_random_name(context, xpath):
+@step('Type random "{field}" to "{xpath}"')
+def type_random_name(context, field, xpath):
     fake = Faker('En')
     data_dict = {
         'first_name': fake.first_name(),
         'last_name': fake.last_name(),
         'company': fake.company(),
-        'adress_1': fake.address(),
-        'adress_2': fake.address(),
+        'address_1': fake.address(),
+        'address_2': fake.address(),
         'city': fake.city(),
+        'postcode': fake.postcode(),
         'email': fake.email()
     }
+    if field == 'first_name':
+        type_in(context, data_dict['first_name'], xpath)
+    elif field == 'last_name':
+        type_in(context, data_dict['last_name'], xpath)
+    elif field == 'company':
+        type_in(context, data_dict['company'], xpath)
+    elif field == 'address_1':
+        type_in(context, data_dict['address_1'], xpath)
+    elif field == 'address_2':
+        type_in(context, data_dict['address_2'], xpath)
+    elif field == 'city':
+        type_in(context, data_dict['city'], xpath)
+    elif field == 'postcode':
+        type_in(context, data_dict['postcode'], xpath)
 
-    type_in(context, data_dict['first_name'], xpath)
 
